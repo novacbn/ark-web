@@ -1,0 +1,43 @@
+{
+    "name": "@ark/storage",
+    "version": "0.1.1",
+    "type": "module",
+    "engines": {
+        "node": ">= 12.17.0"
+    },
+    "repository": {
+        "url": "https://github.com/novacbn/ark-web/tree/main/packages/@ark-storage"
+    },
+    "scripts": {
+        "build:application": "svelte-kit build",
+        "dev:application": "svelte-kit dev --host 0.0.0.0",
+        "preview:application": "svelte-kit preview --host 0.0.0.0"
+    },
+    "devDependencies": {
+        "@supabase/supabase-js": "^1.11.9",
+        "@sveltejs/adapter-node": "^1.0.0-next.18",
+        "@sveltejs/kit": "^1.0.0-next.100",
+        "@types/cookie": "^0.4.0",
+        "@types/ms": "^0.7.31",
+        "@types/pino": "^6.3.7",
+        "cookie": "^0.4.1",
+        "dotenv": "^9.0.0",
+        "dotenv-expand": "^5.1.0",
+        "ms": "^2.1.2",
+        "pino": "^6.11.2",
+        "pino-pretty": "^4.7.1",
+        "prettier": "^2.2.1",
+        "svelte": "^3.35.0",
+        "svelte-preprocess": "^4.7.0",
+        "tslib": "^2.1.0",
+        "typescript": "^4.2.3",
+        "ulid": "^2.3.0",
+        "vite": "^2.1.5"
+    },
+    "dependencies": {
+        "@kahi-ui/framework": "github:novacbn/kahi-ui",
+        "@kahi-ui/svelte": "github:novacbn/kahi-ui-svelte",
+        "svelte-feather": "github:novacbn/svelte-feather",
+        "xbytes": "^1.7.0"
+    }
+}
