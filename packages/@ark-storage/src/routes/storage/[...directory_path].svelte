@@ -54,20 +54,23 @@
 <script lang="ts">
     import {browser} from "$app/env";
     import {Spacer, Stack} from "@kahi-ui/svelte";
-    import {getContext, onMount} from "svelte";
+    import {getContext, onDestroy, onMount} from "svelte";
 
+    import type {IActionHandle} from "../../client/actions";
+    import {modify_blob} from "../../client/blob";
     import {use_filedrop} from "../../client/filedrop";
     import {use_filepaste} from "../../client/filepaste";
 
-    import {PASTE_PREFIX} from "../../shared/environment";
-    import {ICON_ALERT, ICON_COPY, ICON_UPLOAD} from "../../shared/icons";
+    import {PASTE_PREFIX, UPLOAD_MAX_FILESIZE} from "../../shared/environment";
+    import {BlobTooLargeError} from "../../shared/errors";
+    import {ICON_ALERT, ICON_COPY, ICON_NEGATIVE, ICON_UPLOAD} from "../../shared/icons";
     import {query_param, query_param_boolean} from "../../shared/location";
 
     import {await_for, debounce} from "../../shared/util/functional";
     import {
         MIMETYPES_KNOWN,
         MIMETYPE_EXTENSIONS,
-        MIMETYPE_PASTEABLE,
+        MIMETYPES_PASTEABLE,
     } from "../../shared/util/mimetypes";
     import {generate_local_timestamp} from "../../shared/util/generate";
 
@@ -113,8 +116,9 @@
         return !!$preview || !!$prompts;
     }
 
+    let handle_file_drop: IActionHandle, handle_file_paste: IActionHandle;
     onMount(() => {
-        use_filedrop(document, {
+        handle_file_drop = use_filedrop(document, {
             on_filedrop_enter(event) {
                 if (!has_active_prompt()) $uploading = true;
             },
@@ -124,8 +128,8 @@
             },
         });
 
-        use_filepaste(document, {
-            types: MIMETYPE_PASTEABLE as MIMETYPES_KNOWN[],
+        handle_file_paste = use_filepaste(document, {
+            types: MIMETYPES_PASTEABLE as MIMETYPES_KNOWN[],
 
             async on_file_paste(blobs) {
                 if (has_active_prompt() || !uploads) return;
@@ -139,16 +143,31 @@
                     });
                 }
 
+                let [blob] = blobs;
                 const handle = notifications.push_notification({
                     icon: ICON_COPY,
                     title: "Loading Clipboard Item",
                 });
 
-                let [blob] = blobs;
-                try {
-                    blob = await prompts.prompt_modify_image({blob});
-                } catch (err) {
+                if (blob.size > UPLOAD_MAX_FILESIZE) {
+                    handle.update({
+                        icon: ICON_NEGATIVE,
+                        title: "Clipboard Item Too Large for Uploading",
+                    });
+
                     return;
+                }
+
+                try {
+                    blob = await modify_blob(prompts, blob);
+                } catch (err) {
+                    if (err instanceof BlobTooLargeError) {
+                        notifications.push_notification({
+                            icon: ICON_ALERT,
+                            title: "Clipboard Item Too Large for Editing",
+                            description: "Skipping in-Browser Editor",
+                        });
+                    }
                 }
 
                 const extension = MIMETYPE_EXTENSIONS[blob.type] ?? "";
@@ -168,6 +187,11 @@
                 $uploading = true;
             },
         });
+    });
+
+    onDestroy(() => {
+        if (handle_file_drop) handle_file_drop.destroy();
+        if (handle_file_paste) handle_file_paste.destroy();
     });
 
     $: _entries = [...directories, ...files];

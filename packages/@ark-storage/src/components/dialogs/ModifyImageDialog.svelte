@@ -20,6 +20,8 @@
     import {crop_image} from "../../client/image";
     import type {IModifyImagePromptOptions, IPromptHandle} from "../../client/prompts";
 
+    import {PromptDismissedError} from "../../shared/errors";
+
     import EditorImageCrop from "../editor/EditorImageCrop.svelte";
     import BlobImage from "../utilities/BlobImage.svelte";
 
@@ -31,11 +33,11 @@
     export let handle: IPromptHandle<Blob, IModifyImagePromptOptions>;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
-        handle.reject(new Error("prompt dismissed"));
+        handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
     function on_dismiss_click(event: MouseEvent) {
-        handle.reject(new Error("prompt dismissed"));
+        handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
     function on_crop_change() {

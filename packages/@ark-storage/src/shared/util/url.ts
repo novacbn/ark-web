@@ -31,7 +31,7 @@ export function ext_pathname(uri: string): string {
     const segments = pathname.split(".");
 
     if (segments.length < 2) return "";
-    return segments[segments.length - 1];
+    return "." + segments[segments.length - 1];
 }
 
 export function normalize_pathname(uri: string): string {

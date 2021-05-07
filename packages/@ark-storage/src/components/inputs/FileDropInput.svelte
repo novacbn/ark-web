@@ -10,12 +10,13 @@
     import {Box, Stack} from "@kahi-ui/svelte";
     import {createEventDispatcher, getContext} from "svelte";
 
+    import {UPLOAD_MAX_FILESIZE} from "../../shared/environment";
     import {ICON_NEGATIVE, ICON_UPLOAD} from "../../shared/icons";
 
     const dispatch = createEventDispatcher();
     const notifications = getContext("notifications");
 
-    export let max_size: number = 0;
+    export let max_size: number = UPLOAD_MAX_FILESIZE;
 
     function on_input(event: Event) {
         if (!event.isTrusted) return;

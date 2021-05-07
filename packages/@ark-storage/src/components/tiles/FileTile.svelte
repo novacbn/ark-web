@@ -39,14 +39,24 @@
     } from "@kahi-ui/svelte";
     import {createEventDispatcher, getContext} from "svelte";
 
-    import {ICON_EDIT, ICON_FILE, ICON_MODIFY, ICON_REMOVE} from "../../shared/icons";
+    import {can_modify as can_modify_blob, modify_blob} from "../../client/blob";
+
+    import {
+        ICON_EDIT,
+        ICON_FILE,
+        ICON_MODIFY,
+        ICON_NEGATIVE,
+        ICON_REMOVE,
+    } from "../../shared/icons";
 
     import {format_bytes} from "../../shared/util/filesize";
-    import {MIMETYPE_ICONS, MIMETYPE_IMAGE} from "../../shared/util/mimetypes";
+    import {MIMETYPE_ICONS, get_mime_type} from "../../shared/util/mimetypes";
 
     import * as Inputs from "../inputs";
+    import {PromptDismissedError} from "../../shared/errors";
 
     const dispatch = createEventDispatcher();
+    const notifications = getContext("notifications");
     const prompts = getContext("prompts");
 
     let input_element: HTMLInputElement;
@@ -65,8 +75,15 @@
     async function on_modify_click(event: CustomEvent<MouseEvent>) {
         let blob: Blob;
         try {
-            blob = await prompts.prompt_modify_image({blob: file});
+            blob = await modify_blob(prompts, file);
         } catch (err) {
+            if (!(err instanceof PromptDismissedError)) {
+                notifications.push_notification({
+                    icon: ICON_NEGATIVE,
+                    title: "Failed to Modify File",
+                });
+            }
+
             return;
         }
 
@@ -100,8 +117,10 @@
 
     $: _can_change = !state || state === UPLOAD_STATE.queued;
     $: _can_remove = !state || state === UPLOAD_STATE.finished || state === UPLOAD_STATE.queued;
+    $: _can_modify = can_modify && can_modify_blob(file);
+    $: _mime_type = get_mime_type(file.type);
     // @ts-ignore - HACK: Yes I know, `undefined` "cannot" be used as an index
-    $: _icon = STATE_ICONS[state] ?? MIMETYPE_ICONS[file.type] ?? ICON_FILE;
+    $: _icon = STATE_ICONS[state] ?? MIMETYPE_ICONS[_mime_type] ?? ICON_FILE;
 </script>
 
 <Tile.Container class="tile-file" palette="light">
@@ -128,12 +147,12 @@
         </Tile.Heading>
 
         <Tile.Text>
-            {format_bytes(file.size || 0)} &bullet; {file.type || "N/A"}
+            {format_bytes(file.size || 0)} &bullet; {_mime_type || "N/A"}
         </Tile.Text>
     </Tile.Body>
 
     <Tile.Footer>
-        {#if _can_change && can_modify && MIMETYPE_IMAGE.includes(file.type)}
+        {#if _can_change && _can_modify}
             <Button palette="alert" on:click={on_modify_click}>
                 <ICON_MODIFY size="1.25em" />
             </Button>

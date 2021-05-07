@@ -38,7 +38,7 @@
 
     import type {FileObject} from "../../shared/supabase/storage";
 
-    import {MIMETYPE_ICONS} from "../../shared/util/mimetypes";
+    import {MIMETYPE_ICONS, get_mime_type} from "../../shared/util/mimetypes";
     import {base_pathname, normalize_pathname} from "../../shared/util/url";
 
     import * as Popovers from "../popovers";
@@ -59,7 +59,7 @@
             created_at,
             file_path: normalize_pathname(name),
             name: base_pathname(name).slice(1),
-            mimetype,
+            mimetype: get_mime_type(mimetype),
             size,
             updated_at,
         };

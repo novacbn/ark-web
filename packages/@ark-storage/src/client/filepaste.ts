@@ -1,4 +1,5 @@
 import type {MIMETYPES_KNOWN} from "../shared/util/mimetypes";
+import {get_mime_type} from "../shared/util/mimetypes";
 
 import type {IActionHandle} from "./actions";
 
@@ -22,9 +23,8 @@ export function use_filepaste(
             .filter((item) => {
                 if (item.kind !== "file") return false;
 
-                return (
-                    item.kind === "file" && (types ? (types as string[]).includes(item.type) : true)
-                );
+                const type = get_mime_type(item.type);
+                return item.kind === "file" && (types ? (types as string[]).includes(type) : true);
             })
             .map((item) => item.getAsFile() as Blob | null)
             .filter((blob) => blob !== null) as Blob[];

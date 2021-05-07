@@ -7,6 +7,8 @@
 
     import type {IInputPromptOptions, IPromptHandle} from "../../client/prompts";
 
+    import {PromptDismissedError} from "../../shared/errors";
+
     let form_element: HTMLFormElement;
     let input_element: HTMLInputElement;
     let is_valid: boolean = false;
@@ -14,11 +16,11 @@
     export let handle: IPromptHandle<string, IInputPromptOptions>;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
-        if (!handle.options.required) handle.reject(new Error("prompt dismissed"));
+        if (!handle.options.required) handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
     function on_dismiss_click(event: MouseEvent) {
-        handle.reject(new Error("prompt dismissed"));
+        handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
     function on_input(event: InputEvent) {

@@ -14,7 +14,6 @@
     import type {IUploadsStore} from "../../client/uploads";
     import {UPLOAD_STATE} from "../../client/uploads";
 
-    import {UPLOAD_MAX_FILESIZE} from "../../shared/environment";
     import {ICON_AFFIRMATIVE, ICON_ALERT} from "../../shared/icons";
 
     import {append_pathname} from "../../shared/util/url";
@@ -157,7 +156,7 @@
             <Dialog.Heading>Upload File(s)</Dialog.Heading>
 
             <Dialog.Body>
-                <Inputs.FileDrop max_size={UPLOAD_MAX_FILESIZE} on:drop={on_drop} />
+                <Inputs.FileDrop on:drop={on_drop} />
 
                 {#if $uploads.length > 0}
                     <Spacer spacing="huge" />

@@ -24,6 +24,11 @@ export const META_TITLE = get_string(
 
 export const META_URL = get_string(import.meta.env.VITE_META_URL);
 
+export const MODIFIABLE_MAX_FILESIZE = get_filesize(
+    import.meta.env.VITE_MODIFIABLE_MAX_FILESIZE,
+    "25 MiB"
+);
+
 export const PASTE_PREFIX = get_string(import.meta.env.VITE_PASTE_PREFIX, "paste.");
 
 export const PREVIEW_MAX_FILESIZE = get_filesize(

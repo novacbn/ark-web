@@ -5,9 +5,9 @@
 ## Features
 
 -   Image Paste
--   Pre-Upload Image Cropping
 -   Drag 'n Drop Files to Upload
 -   Upload Queue / Jobs
+-   Simple in-Browser File Editing (Image Cropping)
 -   Public File Sharing URLs
 
 ## UI Samples

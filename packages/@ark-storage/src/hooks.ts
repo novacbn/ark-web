@@ -38,10 +38,8 @@ export const getSession: GetSession<ILocals, ISession> = ({locals}) => {
     if (!supabase || !storage) return {};
 
     const user = supabase.auth.user();
-    if (!user) return {};
-
     const session = supabase.auth.session();
-    if (!session) return {};
+    if (!session || !user) return {};
 
     return {
         authentication: {
@@ -53,7 +51,7 @@ export const getSession: GetSession<ILocals, ISession> = ({locals}) => {
         },
 
         user,
-    } as ISession;
+    };
 };
 
 export const handle: Handle<ILocals> = async ({request, render}) => {
