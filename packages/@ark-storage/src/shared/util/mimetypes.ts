@@ -74,12 +74,12 @@ export const MIMETYPES_MODIFIABLE: readonly string[] = [
     MIMETYPES_KNOWN.jpeg,
     MIMETYPES_KNOWN.png,
 
-    /*MIMETYPES_KNOWN.css,
+    MIMETYPES_KNOWN.css,
     MIMETYPES_KNOWN.html,
     MIMETYPES_KNOWN.javascript,
     MIMETYPES_KNOWN.json,
     MIMETYPES_KNOWN.text,
-    MIMETYPES_KNOWN.typescript,*/
+    MIMETYPES_KNOWN.typescript,
 ];
 
 export const MIMETYPES_PASTEABLE: readonly string[] = [

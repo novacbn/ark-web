@@ -225,24 +225,18 @@
 
             <!-- TODO: Auto prompt to download, maybe via `fetch`? -->
             <!-- download={_base_name} -->
-            {#if is_modifying}
-                <Button palette="negative" disabled>
-                    <ICON_DOWNLOAD size="1.25em" />
-                    <Spacer inline />
-                    Download
-                </Button>
-            {:else}
-                <Button
-                    href={_download_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    palette="negative"
-                >
-                    <ICON_DOWNLOAD size="1.25em" />
-                    <Spacer inline />
-                    Download
-                </Button>
-            {/if}
+
+            <Button
+                disabled={is_modifying}
+                href={_download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                palette="negative"
+            >
+                <ICON_DOWNLOAD size="1.25em" />
+                <Spacer inline />
+                Download
+            </Button>
         </Dialog.Footer>
     </Dialog.Region>
 </Dialog.Container>

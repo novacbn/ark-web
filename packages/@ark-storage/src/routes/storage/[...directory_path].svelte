@@ -53,7 +53,7 @@
 
 <script lang="ts">
     import {browser} from "$app/env";
-    import {Spacer, Stack} from "@kahi-ui/svelte";
+    import {Modifiers, Spacer, Stack} from "@kahi-ui/svelte";
     import {getContext, onDestroy, onMount} from "svelte";
 
     import type {IActionHandle} from "../../client/actions";
@@ -231,7 +231,27 @@
     {/each}
 
     <Spacer spacing="huge" stretch />
-    <Paginations.Data palette="accent" variation="clear" />
+    <center>
+        <Modifiers.Small>
+            {directories.length} directories, {files.length} files
+        </Modifiers.Small>
+    </center>
+
+    <Spacer spacing="tiny" />
+    <Paginations.Data
+        href="/storage{directory_path}?offset=%s"
+        palette="accent"
+        variation="clear"
+        current={13}
+        delta={2}
+        pages={25}
+    />
 {/if}
 
 <Dialogs.Upload {directory_path} bind:state={$uploading} />
+
+<style>
+    center {
+        opacity: var(--opacity-dull);
+    }
+</style>

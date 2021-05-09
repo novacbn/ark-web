@@ -3,21 +3,21 @@ import type {SvelteComponent} from "svelte";
 import type {Readable} from "svelte/store";
 import {readable, writable} from "svelte/store";
 
-import {Alert, Confirm, Input, ModifyImage} from "../components/dialogs";
+import {Alert, Confirm, Input, ModifyImage, Text} from "../components/dialogs";
 
-export interface IAlertPromptOptions {
-    text: string;
-
+export interface IPromptOptions {
     title?: string;
 }
 
-export interface IConfirmPromptOptions {
+export interface IAlertPromptOptions extends IPromptOptions {
     text: string;
-
-    title?: string;
 }
 
-export interface IInputPromptOptions {
+export interface IConfirmPromptOptions extends IPromptOptions {
+    text: string;
+}
+
+export interface IInputPromptOptions extends IPromptOptions {
     default_value?: string;
 
     max_length?: number;
@@ -32,15 +32,17 @@ export interface IInputPromptOptions {
 
     text: string;
 
-    title?: string;
-
     type?: "email" | "password" | "text" | "url";
 }
 
-export interface IModifyImagePromptOptions {
+export interface IModifyImagePromptOptions extends IPromptOptions {
     blob: Blob;
+}
 
-    title?: string;
+export interface ITextPromptOptions extends IPromptOptions {
+    default_value?: string;
+
+    syntax?: string;
 }
 
 export interface IPromptHandle<T = any, V extends Record<string, any> = Record<string, any>> {
@@ -66,6 +68,8 @@ export interface IPromptsStore extends Readable<IPromptHandle | null> {
     prompt_input: (options: IInputPromptOptions) => Promise<string>;
 
     prompt_modify_image: (options: IModifyImagePromptOptions) => Promise<Blob>;
+
+    prompt_text: (options: ITextPromptOptions) => Promise<string>;
 }
 
 export function prompts(): IPromptsStore {
@@ -133,6 +137,14 @@ export function prompts(): IPromptsStore {
             return this.create_prompt<Blob, IModifyImagePromptOptions>(
                 // @ts-ignore - HACK: `SvelteComponent` not the same as `SvelteComponentDev`?
                 ModifyImage,
+                options
+            );
+        },
+
+        prompt_text(options: ITextPromptOptions): Promise<string> {
+            return this.create_prompt<string, ITextPromptOptions>(
+                // @ts-ignore - HACK: `SvelteComponent` not the same as `SvelteComponentDev`?
+                Text,
                 options
             );
         },

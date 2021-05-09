@@ -2,7 +2,12 @@ import {MODIFIABLE_MAX_FILESIZE} from "../shared/environment";
 import {BlobTooLargeError, MimetypeNotModifiableError} from "../shared/errors";
 import {can_modify as can_modify_file} from "../shared/files";
 
-import {get_mime_type, MIMETYPES_MODIFIABLE, MIMETYPE_IMAGE} from "../shared/util/mimetypes";
+import {
+    get_mime_type,
+    MIMETYPES_MODIFIABLE,
+    MIMETYPE_IMAGE,
+    MIMETYPE_TEXT,
+} from "../shared/util/mimetypes";
 
 import type {IPromptsStore} from "./prompts";
 
@@ -23,6 +28,13 @@ export async function modify_blob(prompts: IPromptsStore, blob: Blob): Promise<B
     }
 
     if (MIMETYPE_IMAGE.includes(mime_type)) return prompts.prompt_modify_image({blob});
+    else if (MIMETYPE_TEXT.includes(mime_type)) {
+        // TODO: Syntax highlighting
+        let text = await blob.text();
+        text = await prompts.prompt_text({default_value: text});
+
+        return new Blob([text], {type: blob.type});
+    }
 
     return blob;
 }

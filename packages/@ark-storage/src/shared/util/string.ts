@@ -6,6 +6,6 @@ export function is_affirmative(text: string): boolean {
     return text === "true" || text === "1" || text === "on" || text === "y" || text === "yes";
 }
 
-export function substitute_value(text: string, value: string): string {
-    return text.replace(EXPRESSION_SUBSTITUTE, value);
+export function substitute_value(text: string, value: any): string {
+    return text.replace(EXPRESSION_SUBSTITUTE, value.toString());
 }

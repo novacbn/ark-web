@@ -6,4 +6,5 @@ export {default as Input} from "./InputDialog.svelte";
 export {default as ModifyImage} from "./ModifyImageDialog.svelte";
 export {default as Preview} from "./PreviewDialog.svelte";
 export {default as Rename} from "./RenameDialog.svelte";
+export {default as Text} from "./TextDialog.svelte";
 export {default as Upload} from "./UploadDialog.svelte";

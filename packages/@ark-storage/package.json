@@ -37,6 +37,7 @@
     "dependencies": {
         "@kahi-ui/framework": "github:novacbn/kahi-ui",
         "@kahi-ui/svelte": "github:novacbn/kahi-ui-svelte",
+        "svelte-codejar": "github:novacbn/svelte-codejar#0.0.2",
         "svelte-feather": "github:novacbn/svelte-feather",
         "xbytes": "^1.7.0"
     }

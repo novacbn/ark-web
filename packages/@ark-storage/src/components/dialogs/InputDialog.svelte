@@ -23,7 +23,7 @@
         handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
-    function on_input(event: InputEvent) {
+    function on_input(event: Event) {
         is_valid = form_element.checkValidity();
     }
 

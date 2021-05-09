@@ -147,7 +147,7 @@
         </Tile.Heading>
 
         <Tile.Text>
-            {format_bytes(file.size || 0)} &bullet; {_mime_type || "N/A"}
+            {format_bytes(file.size || 0)} &bullet; {_mime_type || "application/octet-stream"}
         </Tile.Text>
     </Tile.Body>
 

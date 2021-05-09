@@ -56,7 +56,7 @@
         handle.options.blob = await crop_image(handle.options.blob, points.start, points.end);
     }
 
-    async function on_submit(event: MouseEvent) {
+    async function on_submit_click(event: MouseEvent) {
         if (tab === MODIFY_IMAGE_TABS.crop) await on_crop_commit_click(event);
         handle.resolve(handle.options.blob);
     }
@@ -134,7 +134,7 @@
                 </Button>
             {/if}
 
-            <Button palette="accent" on:click={on_submit}>Submit</Button>
+            <Button palette="accent" on:click={on_submit_click}>Submit</Button>
         </Dialog.Footer>
     </Dialog.Region>
 </Dialog.Container>
