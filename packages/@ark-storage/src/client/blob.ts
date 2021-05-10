@@ -1,6 +1,6 @@
 import {MODIFIABLE_MAX_FILESIZE} from "../shared/environment";
 import {BlobTooLargeError, MimetypeNotModifiableError} from "../shared/errors";
-import {can_modify as can_modify_file} from "../shared/files";
+import {can_modify as can_modify_file, can_preview as can_preview_file} from "../shared/files";
 
 import {
     get_mime_type,
@@ -13,6 +13,10 @@ import type {IPromptsStore} from "./prompts";
 
 export function can_modify(blob: Blob): boolean {
     return can_modify_file(blob.type, blob.size);
+}
+
+export function can_preview(blob: Blob): boolean {
+    return can_preview_file(blob.type, blob.size);
 }
 
 export async function modify_blob(prompts: IPromptsStore, blob: Blob): Promise<Blob> {

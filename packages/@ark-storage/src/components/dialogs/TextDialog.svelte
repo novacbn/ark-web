@@ -7,11 +7,11 @@
     import {onMount} from "svelte";
     import type {CodeJar} from "svelte-codejar";
 
-    import type {IPromptHandle, ITextPromptOptions} from "../../client/prompts";
+    import type {ITextPromptHandle} from "../../client/prompts";
 
     import {PromptDismissedError} from "../../shared/errors";
 
-    export let handle: IPromptHandle<string, ITextPromptOptions>;
+    export let handle: ITextPromptHandle;
 
     let value: string = handle.options.default_value ?? "";
 

@@ -5,7 +5,7 @@
         // @ts-ignore
     } from "@kahi-ui/svelte";
 
-    import type {IInputPromptOptions, IPromptHandle} from "../../client/prompts";
+    import type {IInputPromptHandle} from "../../client/prompts";
 
     import {PromptDismissedError} from "../../shared/errors";
 
@@ -13,7 +13,7 @@
     let input_element: HTMLInputElement;
     let is_valid: boolean = false;
 
-    export let handle: IPromptHandle<string, IInputPromptOptions>;
+    export let handle: IInputPromptHandle;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
         if (!handle.options.required) handle.reject(new PromptDismissedError("prompt dismissed"));

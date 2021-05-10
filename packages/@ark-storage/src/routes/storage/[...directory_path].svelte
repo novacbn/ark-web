@@ -8,39 +8,42 @@
     async function query_directory(
         fetch: typeof window.fetch,
         directory_path: string = "",
-        limit: string = "25",
-        offset: string = "0"
-    ): Promise<{directories: FileObject[]; files: FileObject[]}> {
+        page: string = "1"
+    ): Promise<{directories: FileObject[]; files: FileObject[]; pages: number}> {
         // NOTE: The serverside `fetch` doesn't handle transforming `/path/to/something/` -> `/path/to/something`
         directory_path = normalize_pathname(directory_path);
         directory_path = directory_path === "/" ? "" : directory_path;
 
         const response = await fetch(
-            `/api/v1/storage/directories/list${directory_path}?limit=${limit}&offset=${offset}`
+            `/api/v1/storage/directories/list${directory_path}?page=${page}`
         );
 
         if (!response.ok) {
             throw new Error(`failed to query directory '${directory_path}'`);
         }
 
-        const {directories, files} = (await response.json()).data;
+        const {directories, files, pages} = (await response.json()).data;
 
         return {
             directories,
             files,
+            pages,
         };
     }
 
     export const load = reroute_unauth(async ({fetch, page}) => {
         try {
             const {directory_path} = page.params;
-            const {directories, files} = await query_directory(fetch, directory_path);
+            const {page: _page} = Object.fromEntries(page.query.entries());
+
+            const {directories, files, pages} = await query_directory(fetch, directory_path, _page);
 
             return {
                 props: {
                     directory_path,
                     directories,
                     files,
+                    pages,
                 },
             };
         } catch (err) {
@@ -87,8 +90,7 @@
     const storage = getContext("storage");
     const uploads = getContext("uploads");
 
-    const limit = query_param("limit", {default_value: "25"});
-    const offset = query_param("offset", {default_value: "0"});
+    const page = query_param("page", {default_value: "1"});
     const uploading = query_param_boolean("uploading", {default_value: false});
 
     let initial = true;
@@ -96,16 +98,12 @@
     export let directory_path: string = "";
     export let directories: FileObject[] = [];
     export let files: FileObject[] = [];
+    export let pages: number = 1;
 
     const refresh_listing = debounce(
-        await_for(async (_limit: string = $limit, _offset: string = $offset) => {
+        await_for(async (_page: string = $page) => {
             try {
-                ({directories, files} = await query_directory(
-                    fetch,
-                    directory_path,
-                    _limit,
-                    _offset
-                ));
+                ({directories, files, pages} = await query_directory(fetch, directory_path, _page));
             } catch (err) {}
         }),
         100
@@ -196,7 +194,7 @@
 
     $: _entries = [...directories, ...files];
 
-    $: if (browser && !initial) refresh_listing($limit, $offset);
+    $: if (browser && !initial) refresh_listing($page);
     $: if (!initial) initial = true;
 
     // TODO: Look into in-place updating
@@ -222,12 +220,12 @@
     -->
 
     {#each files as file (file.name)}
-        <Dialogs.Preview {file} />
+        <Dialogs.StoragePreview {file} />
     {/each}
 
     {#each _entries as entry (entry.name)}
-        <Dialogs.Delete file_path={entry.name} />
-        <Dialogs.Rename file_path={entry.name} />
+        <Dialogs.StorageDelete file_path={entry.name} />
+        <Dialogs.StorageRename file_path={entry.name} />
     {/each}
 
     <Spacer spacing="huge" stretch />
@@ -237,18 +235,20 @@
         </Modifiers.Small>
     </center>
 
-    <Spacer spacing="tiny" />
-    <Paginations.Data
-        href="/storage{directory_path}?offset=%s"
-        palette="accent"
-        variation="clear"
-        current={13}
-        delta={2}
-        pages={25}
-    />
+    {#if pages > 1}
+        <Spacer spacing="tiny" />
+        <Paginations.Data
+            href="/storage{directory_path}?page=%s"
+            palette="accent"
+            variation="clear"
+            current={parseInt($page)}
+            delta={2}
+            {pages}
+        />
+    {/if}
 {/if}
 
-<Dialogs.Upload {directory_path} bind:state={$uploading} />
+<Dialogs.StorageUpload {directory_path} bind:state={$uploading} />
 
 <style>
     center {

@@ -3,19 +3,41 @@ import type {SvelteComponent} from "svelte";
 import type {Readable} from "svelte/store";
 import {readable, writable} from "svelte/store";
 
-import {Alert, Confirm, Input, ModifyImage, Text} from "../components/dialogs";
+import {Alert, BlobPreview, Confirm, Input, ModifyImage, Text} from "../components/dialogs";
 
 export interface IPromptOptions {
     title?: string;
 }
 
+export interface IPromptHandle<T = any, V extends Record<string, any> = Record<string, any>> {
+    component: SvelteComponent;
+
+    reject: (reason: any) => void;
+
+    resolve: (value: T) => void;
+
+    options: V;
+}
+
+export interface IAlertPromptHandle extends IPromptHandle<void, IAlertPromptOptions> {}
+
 export interface IAlertPromptOptions extends IPromptOptions {
     text: string;
 }
 
+export interface IBlobPreviewPromptHandle extends IPromptHandle<void, IBlobPreviewPromptOptions> {}
+
+export interface IBlobPreviewPromptOptions extends IPromptOptions {
+    blob: Blob;
+}
+
+export interface IConfirmPromptHandle extends IPromptHandle<boolean, IConfirmPromptOptions> {}
+
 export interface IConfirmPromptOptions extends IPromptOptions {
     text: string;
 }
+
+export interface IInputPromptHandle extends IPromptHandle<string, IInputPromptOptions> {}
 
 export interface IInputPromptOptions extends IPromptOptions {
     default_value?: string;
@@ -35,24 +57,18 @@ export interface IInputPromptOptions extends IPromptOptions {
     type?: "email" | "password" | "text" | "url";
 }
 
+export interface IModifyImagePromptHandle extends IPromptHandle<Blob, IModifyImagePromptOptions> {}
+
 export interface IModifyImagePromptOptions extends IPromptOptions {
     blob: Blob;
 }
+
+export interface ITextPromptHandle extends IPromptHandle<string, ITextPromptOptions> {}
 
 export interface ITextPromptOptions extends IPromptOptions {
     default_value?: string;
 
     syntax?: string;
-}
-
-export interface IPromptHandle<T = any, V extends Record<string, any> = Record<string, any>> {
-    component: SvelteComponent;
-
-    reject: (reason: any) => void;
-
-    resolve: (value: T) => void;
-
-    options: V;
 }
 
 export interface IPromptsStore extends Readable<IPromptHandle | null> {
@@ -62,6 +78,8 @@ export interface IPromptsStore extends Readable<IPromptHandle | null> {
     ) => Promise<T>;
 
     prompt_alert: (options: IAlertPromptOptions) => Promise<void>;
+
+    prompt_blob_preview: (options: IBlobPreviewPromptOptions) => Promise<void>;
 
     prompt_confirm: (options: IConfirmPromptOptions) => Promise<boolean>;
 
@@ -113,6 +131,14 @@ export function prompts(): IPromptsStore {
             return this.create_prompt<void, IAlertPromptOptions>(
                 // @ts-ignore - HACK: `SvelteComponent` not the same as `SvelteComponentDev`?
                 Alert,
+                options
+            );
+        },
+
+        prompt_blob_preview(options: IBlobPreviewPromptOptions): Promise<void> {
+            return this.create_prompt<void, IBlobPreviewPromptOptions>(
+                // @ts-ignore - HACK: `SvelteComponent` not the same as `SvelteComponentDev`?
+                BlobPreview,
                 options
             );
         },

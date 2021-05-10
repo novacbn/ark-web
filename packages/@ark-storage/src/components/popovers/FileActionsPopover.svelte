@@ -27,7 +27,7 @@
     let ACTION_DELETE: IPopoverAction;
     $: ACTION_DELETE = {
         icon: ICON_REMOVE,
-        for: `dialog-delete-${_file_path}`,
+        for: `dialog-storage-delete-${_file_path}`,
         palette: "negative",
         text: "Delete",
     };
@@ -43,14 +43,14 @@
     let ACTION_PREVIEW: IPopoverAction;
     $: ACTION_PREVIEW = {
         icon: ICON_ATTACHMENT,
-        for: `dialog-preview-${_file_path}`,
+        for: `dialog-storage-preview-${_file_path}`,
         text: "Preview",
     };
 
     let ACTION_RENAME: IPopoverAction;
     $: ACTION_RENAME = {
         icon: ICON_EDIT,
-        for: `dialog-rename-${_file_path}`,
+        for: `dialog-storage-rename-${_file_path}`,
         text: "Rename",
     };
 

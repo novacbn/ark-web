@@ -5,9 +5,9 @@
         // @ts-ignore
     } from "@kahi-ui/svelte";
 
-    import type {IAlertPromptOptions, IPromptHandle} from "../../client/prompts";
+    import type {IAlertPromptHandle} from "../../client/prompts";
 
-    export let handle: IPromptHandle<void, IAlertPromptOptions>;
+    export let handle: IAlertPromptHandle;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
         handle.resolve();

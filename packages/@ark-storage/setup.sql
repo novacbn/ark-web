@@ -1,3 +1,8 @@
+-- Authentication
+
+GRANT USAGE ON SCHEMA auth TO anon;
+GRANT USAGE ON SCHEMA auth TO authenticated;
+
 -- User Shared Files
 
 DROP TABLE IF EXISTS public.shared_files;
@@ -53,3 +58,48 @@ CREATE POLICY "Users can view their own Bucket Files." ON storage.objects
 DROP POLICY IF EXISTS "Users can update their own Bucket Files." ON storage.objects;
 CREATE POLICY "Users can update their own Bucket Files." ON storage.objects
     FOR UPDATE USING (bucket_id = CONCAT('ugc_', auth.uid()));
+
+DROP FUNCTION IF EXISTS storage.entrycount(_bucket_id text, _folder text);
+CREATE FUNCTION storage.entrycount(_bucket_id text, _folder text)
+  RETURNS integer
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  _count integer;
+BEGIN
+  SELECT COUNT(name), bucket_id
+  FROM storage.objects
+  WHERE array_to_string(storage.foldername(name), '/') = _folder INTO _count AND bucket_id = _bucket_id
+  GROUP by bucket_id;
+
+  RETURN _count;
+END
+$function$;
+
+DROP FUNCTION IF EXISTS storage.pagecount(_bucket_id text, _folder text, _limit integer);
+CREATE FUNCTION storage.pagecount(_bucket_id text, _folder text, _limit integer)
+  RETURNS integer
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  _count integer;
+BEGIN
+  SELECT storage.entrycount(_bucket_id, _folder) into _count;
+
+  RETURN ceil(_count::numeric / _limit);
+END
+$function$;
+
+DROP FUNCTION IF EXISTS public.folderpages(_folder text, _limit integer);
+CREATE FUNCTION public.folderpages(_folder text, _limit integer)
+  RETURNS integer
+  LANGUAGE plpgsql
+AS $function$
+DECLARE
+  _count integer;
+BEGIN
+  SELECT storage.pagecount(concat('ugc_'::text, auth.uid()), _folder, _limit) into _count;
+
+  RETURN _count;
+END
+$function$;

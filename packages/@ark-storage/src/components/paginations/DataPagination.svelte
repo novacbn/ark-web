@@ -29,15 +29,13 @@
     $: {
         _pages = [];
 
-        let range_low = Math.max(2, current - delta - Math.max(delta + 1 - (pages - current), 0));
-        let range_high = Math.min(
+        const range_low = Math.max(2, current - delta - Math.max(delta + 1 - (pages - current), 0));
+        const range_high = Math.min(
             pages - 1,
             current + delta + Math.max(delta + 1 - (current - 1), 0)
         );
 
-        for (let count = range_low; count <= range_high; count++) {
-            _pages.push(count);
-        }
+        for (let count = range_low; count <= range_high; count++) _pages.push(count);
     }
 
     $: _prev_page = Math.max(1, current - 1);

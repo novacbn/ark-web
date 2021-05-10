@@ -1,28 +1,26 @@
 import {reroute_unauth} from "../../../../../../_server/endpoint";
 
-import type {FileObject} from "../../../../../../shared/supabase/storage";
+import type {IQueryResults} from "../../../../../../shared/supabase/storage";
 
 export const get = reroute_unauth(async (request) => {
     const {logger, storage, user} = request.locals;
     const {directory_path} = request.params;
+    const {page = "1"} = Object.fromEntries(request.query);
 
-    const {limit = "25", offset = "0"} = Object.fromEntries(request.query);
+    const parsed_page = parseInt(page);
 
-    const parsed_limit = parseInt(limit);
-    const parsed_offset = parseInt(offset);
-
-    if (isNaN(parsed_limit) || isNaN(parsed_offset)) {
+    if (isNaN(parsed_page)) {
         return {
             status: 400,
             body: "InvalidRequest",
         };
     }
 
-    let entries: FileObject[];
+    let results: IQueryResults;
     try {
-        entries = await storage.query_directory(directory_path, {
-            limit: parsed_limit,
-            offset: parsed_offset,
+        results = await storage.query_directory(directory_path, {
+            limit: 100,
+            offset: (parsed_page - 1) * 100,
         });
     } catch (err) {
         logger.error(err, `failed to query '${directory_path}'`);
@@ -33,9 +31,6 @@ export const get = reroute_unauth(async (request) => {
         };
     }
 
-    const directories = entries.filter((file) => !file.id);
-    const files = entries.filter((file) => file.id);
-
     logger.info(
         {user_id: user.id, directory_path},
         `responding with listing for '${directory_path}'`
@@ -45,10 +40,7 @@ export const get = reroute_unauth(async (request) => {
         status: 200,
 
         body: {
-            data: {
-                directories,
-                files,
-            },
+            data: results,
         },
     };
 });

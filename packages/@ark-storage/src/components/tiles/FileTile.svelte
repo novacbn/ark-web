@@ -39,9 +39,14 @@
     } from "@kahi-ui/svelte";
     import {createEventDispatcher, getContext} from "svelte";
 
-    import {can_modify as can_modify_blob, modify_blob} from "../../client/blob";
+    import {
+        can_modify as can_modify_blob,
+        can_preview as can_preview_blob,
+        modify_blob,
+    } from "../../client/blob";
 
     import {
+        ICON_ATTACHMENT,
         ICON_EDIT,
         ICON_FILE,
         ICON_MODIFY,
@@ -63,6 +68,7 @@
     let is_rename_valid: boolean = false;
 
     export let can_modify: boolean = false;
+    export let can_preview: boolean = false;
     export let can_rename: boolean = false;
     export let can_remove: boolean = false;
     export let file: File;
@@ -72,7 +78,7 @@
     let is_renaming: boolean = false;
     let value: string = "";
 
-    async function on_modify_click(event: CustomEvent<MouseEvent>) {
+    async function on_modify_click(event: MouseEvent) {
         let blob: Blob;
         try {
             blob = await modify_blob(prompts, file);
@@ -93,6 +99,10 @@
                 file,
             } as IFileTileModifyEvent["detail"]);
         }
+    }
+
+    function on_preview_click(event: MouseEvent) {
+        prompts.prompt_blob_preview({blob: file, title: file.name});
     }
 
     function on_remove_click(event: MouseEvent) {
@@ -118,6 +128,7 @@
     $: _can_change = !state || state === UPLOAD_STATE.queued;
     $: _can_remove = !state || state === UPLOAD_STATE.finished || state === UPLOAD_STATE.queued;
     $: _can_modify = can_modify && can_modify_blob(file);
+    $: _can_preview = can_preview && can_preview_blob(file);
     $: _mime_type = get_mime_type(file.type);
     // @ts-ignore - HACK: Yes I know, `undefined` "cannot" be used as an index
     $: _icon = STATE_ICONS[state] ?? MIMETYPE_ICONS[_mime_type] ?? ICON_FILE;
@@ -155,6 +166,10 @@
         {#if _can_change && _can_modify}
             <Button palette="alert" on:click={on_modify_click}>
                 <ICON_MODIFY size="1.25em" />
+            </Button>
+        {:else if _can_preview}
+            <Button palette="accent" on:click={on_preview_click}>
+                <ICON_ATTACHMENT size="1.25em" />
             </Button>
         {/if}
 

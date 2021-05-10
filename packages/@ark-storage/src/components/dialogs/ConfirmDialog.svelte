@@ -5,9 +5,9 @@
         // @ts-ignore
     } from "@kahi-ui/svelte";
 
-    import type {IConfirmPromptOptions, IPromptHandle} from "../../client/prompts";
+    import type {IConfirmPromptHandle} from "../../client/prompts";
 
-    export let handle: IPromptHandle<boolean, IConfirmPromptOptions>;
+    export let handle: IConfirmPromptHandle;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
         handle.resolve(false);

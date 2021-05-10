@@ -71,7 +71,11 @@
         {#if column.member === "icon"}
             <svelte:component this={MIMETYPE_ICONS[row.mimetype] ?? ICON_FILE} size="2.25em" />
         {:else if column.member === "name" && can_preview}
-            <Dialog.Button for="dialog-preview-{row.file_path}" palette="accent" variation="clear">
+            <Dialog.Button
+                for="dialog-storage-preview-{row.file_path}"
+                palette="accent"
+                variation="clear"
+            >
                 {row.name}
             </Dialog.Button>
         {:else if column.member === "popover"}

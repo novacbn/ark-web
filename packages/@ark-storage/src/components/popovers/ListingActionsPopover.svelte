@@ -11,7 +11,7 @@
 
     const ACTION_UPLOAD: IPopoverAction = {
         icon: ICON_UPLOAD,
-        for: "dialog-upload",
+        for: "dialog-storage-upload",
         text: "Upload File(s)",
     };
 </script>

@@ -18,7 +18,7 @@
     } from "@kahi-ui/svelte";
 
     import {crop_image} from "../../client/image";
-    import type {IModifyImagePromptOptions, IPromptHandle} from "../../client/prompts";
+    import type {IModifyImagePromptHandle} from "../../client/prompts";
 
     import {PromptDismissedError} from "../../shared/errors";
 
@@ -30,7 +30,7 @@
     let has_changed: boolean = false;
     let tab: MODIFY_IMAGE_TABS = MODIFY_IMAGE_TABS.preview;
 
-    export let handle: IPromptHandle<Blob, IModifyImagePromptOptions>;
+    export let handle: IModifyImagePromptHandle;
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
         handle.reject(new PromptDismissedError("prompt dismissed"));

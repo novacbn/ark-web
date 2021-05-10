@@ -46,6 +46,14 @@ export interface IPathEvent extends IChangeEvent {
     new_path: string;
 }
 
+export interface IQueryResults {
+    directories: FileObject[];
+
+    files: FileObject[];
+
+    pages: number;
+}
+
 export interface IQueryOptions {
     limit: number;
 
@@ -183,19 +191,21 @@ export class StorageClient {
     async query_directory(
         directory_path: string,
         options: Partial<IQueryOptions> = {}
-    ): Promise<FileObject[]> {
+    ): Promise<IQueryResults> {
         const {public_client} = this;
         const {limit, offset, sort_by} = options;
 
         directory_path = normalize_pathname(directory_path).slice(1);
+
+        // TODO: Bypass the JS Storage API and query the storage table directly for better optimization
 
         const {error: bucket_error, data: bucket_data} = await public_client.storage
             .from(this.bucket_id)
             .list(directory_path, {limit, offset, sortBy: sort_by});
 
         if (bucket_error || !bucket_data) throw bucket_error;
-        const available_files = bucket_data.filter((file) => file.id).map((file) => file.id);
 
+        const available_files = bucket_data.filter((file) => file.id).map((file) => file.id);
         const {error: table_error, data: table_data} = await public_client
             .from<ISharedFileRow>(SHARED_FILES_TABLE)
             .select("id, file_id, user_id")
@@ -203,9 +213,16 @@ export class StorageClient {
             .in("file_id", available_files);
 
         if (table_error || !table_data) throw table_error;
-        const shared_files = new Map(table_data.map((row) => [row.file_id, row]));
 
-        return (bucket_data as FileObject[]).map((file) => {
+        const {data: pages_data, error: pages_error} = await this.public_client.rpc("folderpages", {
+            _folder: directory_path,
+            _limit: limit,
+        });
+
+        if (pages_error) throw pages_error;
+
+        const shared_files = new Map(table_data.map((row) => [row.file_id, row]));
+        const entries = (bucket_data as FileObject[]).map((file) => {
             const share = shared_files.get(file.id);
 
             return {
@@ -217,6 +234,14 @@ export class StorageClient {
                 },
             };
         });
+
+        return {
+            directories: entries.filter((file) => !file.id),
+            files: entries.filter((file) => file.id),
+            // @ts-ignore - HACK: Apparently `.rpc` doesn't properly type to
+            // non-array based returns
+            pages: pages_data || 1,
+        };
     }
 
     async share_file(file_path: string, enable: true): Promise<string>;

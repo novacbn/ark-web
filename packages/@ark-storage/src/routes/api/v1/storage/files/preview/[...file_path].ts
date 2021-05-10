@@ -49,13 +49,15 @@ export const get = reroute_unauth(async (request) => {
 
     logger.info({user_id: user.id, file_path}, `responding with download for '${file_path}'`);
 
-    // TODO: Compression, caching, creation / update headers, etags?
+    // TODO: Compression, caching, creation / update headers?
     return {
         status: 200,
         headers: {
             "content-disposition": `attachment;filename=${basename(file_path)}`,
             "content-length": blob.size.toString(),
-            "content-type": blob.type || "application/octet-stream",
+            // HACK: Seems like I should be able to respond with the proper mime type
+            //"content-type": blob.type || "application/octet-stream",
+            "content-type": "application/octet-stream",
         },
 
         body: buffer,
