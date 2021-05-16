@@ -2,6 +2,7 @@
     import {
         Button,
         Dialog,
+        Formatting,
         // @ts-ignore
     } from "@kahi-ui/svelte";
     import {onMount} from "svelte";
@@ -31,10 +32,11 @@
     onMount(async () => {
         ({CodeJar: CJ} = await import("svelte-codejar"));
     });
+
 </script>
 
 <!--
-    TODO: Syntax highlighting via `highlight.js`
+    TODO: Syntax highlighting via `PrismJS`
 -->
 
 <Dialog.Container
@@ -50,14 +52,23 @@
         <Dialog.Heading>{handle.options.title ?? "Edit Text"}</Dialog.Heading>
 
         <Dialog.Body>
-            {#if CJ}
+            {#if handle.options.readonly}
+                <Formatting.PreBlock>
+                    <Formatting.Code>{value}</Formatting.Code>
+                </Formatting.PreBlock>
+            {:else if CJ}
                 <CJ addClosing={true} indentOn={/{$/} spellcheck={false} tab={"\t"} bind:value />
             {/if}
         </Dialog.Body>
 
         <Dialog.Footer>
-            <Button variation="clear" on:click={on_dismiss_click}>Dismiss</Button>
-            <Button palette="accent" on:click={on_confirm_click}>Confirm</Button>
+            {#if handle.options.readonly}
+                <Button palette="accent" on:click={on_dismiss_click}>Dismiss</Button>
+            {:else}
+                <Button variation="clear" on:click={on_dismiss_click}>Dismiss</Button>
+
+                <Button palette="accent" on:click={on_confirm_click}>Confirm</Button>
+            {/if}
         </Dialog.Footer>
     </Dialog.Region>
 </Dialog.Container>
@@ -67,4 +78,5 @@
         height: calc(var(--dialog-region-max-height) * 0.45);
         resize: none !important;
     }
+
 </style>

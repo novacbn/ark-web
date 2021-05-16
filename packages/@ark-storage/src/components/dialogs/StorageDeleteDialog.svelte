@@ -42,7 +42,7 @@
         handle = null;
     }
 
-    function on_form_submit(details: IFormDetails) {
+    function on_form_submit(context: IFormDetails) {
         if (handle) return;
 
         state = false;

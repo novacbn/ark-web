@@ -29,9 +29,10 @@
 
     const notifications = getContext("notifications");
     const prompts = getContext("prompts");
-    const uploads = getContext("uploads") as IUploadsStore;
+    const auth = getContext("auth");
 
-    if (!uploads) throw new Error("uploads not available");
+    if (!$auth) throw new Error("not authenticated");
+    const {uploads} = $auth;
 
     export let directory_path: string = "";
     export let state: boolean = false;
@@ -137,6 +138,7 @@
             awaiting_prompt = false;
         }
     }
+
 </script>
 
 <!--
@@ -226,4 +228,5 @@
 
         transform: translate(-100%, -25%);
     }
+
 </style>

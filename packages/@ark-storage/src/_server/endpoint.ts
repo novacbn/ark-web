@@ -87,7 +87,7 @@ export function reroute_unauth<Body = unknown>(
             return {
                 status: 307,
                 headers: {
-                    location: "/auth/login",
+                    location: "/auth/login?state=unauthenticated",
                 },
 
                 body:

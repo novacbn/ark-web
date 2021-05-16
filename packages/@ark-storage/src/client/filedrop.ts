@@ -1,7 +1,4 @@
-import {browser} from "$app/env";
-import {Readable, readable} from "svelte/store";
-
-import type {IActionHandle} from "./actions";
+import type {IActionHandle} from "./util/actions";
 
 export interface IFileDropHandler {
     check: (items: DataTransferItemList) => boolean;

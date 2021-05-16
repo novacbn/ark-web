@@ -21,14 +21,17 @@
             on_render: (member, value: string) => format_timestamp(value),
         },
 
+        // TODO: `updated_at` never actually updates, however `last_accessed_at` does and
+        // matches updates... sooooo ???
         {
-            member: "updated_at",
+            member: "last_accessed_at",
             text: "Last Modified",
             hidden: "tiny small",
             on_render: (member, value: string) => format_timestamp(value),
         },
         {member: "popover", text: ""},
     ];
+
 </script>
 
 <script lang="ts">
@@ -52,18 +55,19 @@
     export let can_rename: boolean = false;
 
     $: _rows = entries.map((entry) => {
-        const {created_at, metadata, name, updated_at} = entry;
+        const {created_at, last_accessed_at, metadata, name} = entry;
         const {mimetype, size} = metadata;
 
         return {
             created_at,
             file_path: normalize_pathname(name),
+            last_accessed_at,
             name: base_pathname(name).slice(1),
             mimetype: get_mime_type(mimetype),
             size,
-            updated_at,
         };
     });
+
 </script>
 
 <DataTable class="table-files" columns={TABLE_COLUMNS} rows={_rows} variation="striped">

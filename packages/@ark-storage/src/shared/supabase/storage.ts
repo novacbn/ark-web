@@ -62,17 +62,6 @@ export interface IQueryOptions {
     sort_by: SortBy;
 }
 
-export function create_storage_client(
-    client: SupabaseClient,
-    prefix: string = STORAGE_PREFIX
-): StorageClient | null {
-    const user = client.auth.user();
-    if (!user) return null;
-
-    const {id} = user;
-    return new StorageClient(client, id, prefix + id);
-}
-
 export class StorageClient {
     bucket_id: string;
 
@@ -94,7 +83,7 @@ export class StorageClient {
 
         // NOTE: Since the Supabase / Postgrest client doesn't allow access to schemas not specified
         // when initialized, we need to create a new client namespaced to the `storage.*` schemas
-        this.storage_client = create_client(session.access_token, {
+        this.storage_client = create_client(session.access_token, undefined, {
             schema: STORAGE_SCHEMA,
         });
     }
@@ -346,12 +335,7 @@ export class StorageClient {
                         break;
 
                     case "UPDATE": {
-                        if (payload.new.updated_at !== object_row.updated_at) {
-                            set({
-                                change: CHANGE_TYPES.updated,
-                                path,
-                            });
-                        } else if (payload.new.name !== path) {
+                        if (payload.new.name !== path) {
                             const new_path = normalize_pathname(payload.new.name);
                             const new_base_path = dir_pathname(new_path);
 
@@ -362,6 +346,13 @@ export class StorageClient {
                                         : CHANGE_TYPES.moved,
                                 path,
                                 new_path,
+                            });
+                        } else if (payload.new.last_accessed_at !== object_row.last_accessed_at) {
+                            // TODO: `updated_at` never actually updates, however `last_accessed_at` does and
+                            // matches updates... sooooo ???
+                            set({
+                                change: CHANGE_TYPES.updated,
+                                path,
                             });
                         }
 

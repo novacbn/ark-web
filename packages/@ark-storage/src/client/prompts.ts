@@ -68,6 +68,8 @@ export interface ITextPromptHandle extends IPromptHandle<string, ITextPromptOpti
 export interface ITextPromptOptions extends IPromptOptions {
     default_value?: string;
 
+    readonly?: boolean;
+
     syntax?: string;
 }
 

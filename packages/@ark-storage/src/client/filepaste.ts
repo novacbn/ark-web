@@ -1,7 +1,7 @@
 import type {MIMETYPES_KNOWN} from "../shared/util/mimetypes";
 import {get_mime_type} from "../shared/util/mimetypes";
 
-import type {IActionHandle} from "./actions";
+import type {IActionHandle} from "./util/actions";
 
 export interface IFilePasteOptions {
     types?: MIMETYPES_KNOWN[];

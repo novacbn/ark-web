@@ -1,49 +1,21 @@
 <script context="module" lang="ts">
     import {reroute_unauth} from "../../shared/page";
 
+    import {query_directory} from "../../shared/api/storage";
+
     import type {FileObject} from "../../shared/supabase/storage";
-
-    import {normalize_pathname} from "../../shared/util/url";
-
-    async function query_directory(
-        fetch: typeof window.fetch,
-        directory_path: string = "",
-        page: string = "1"
-    ): Promise<{directories: FileObject[]; files: FileObject[]; pages: number}> {
-        // NOTE: The serverside `fetch` doesn't handle transforming `/path/to/something/` -> `/path/to/something`
-        directory_path = normalize_pathname(directory_path);
-        directory_path = directory_path === "/" ? "" : directory_path;
-
-        const response = await fetch(
-            `/api/v1/storage/directories/list${directory_path}?page=${page}`
-        );
-
-        if (!response.ok) {
-            throw new Error(`failed to query directory '${directory_path}'`);
-        }
-
-        const {directories, files, pages} = (await response.json()).data;
-
-        return {
-            directories,
-            files,
-            pages,
-        };
-    }
 
     export const load = reroute_unauth(async ({fetch, page}) => {
         try {
             const {directory_path} = page.params;
             const {page: _page} = Object.fromEntries(page.query.entries());
 
-            const {directories, files, pages} = await query_directory(fetch, directory_path, _page);
+            const response = await query_directory(directory_path, _page, fetch);
 
             return {
                 props: {
                     directory_path,
-                    directories,
-                    files,
-                    pages,
+                    response,
                 },
             };
         } catch (err) {
@@ -52,10 +24,10 @@
             };
         }
     });
+
 </script>
 
 <script lang="ts">
-    import {browser} from "$app/env";
     import {Modifiers, Spacer, Stack} from "@kahi-ui/svelte";
     import {getContext, onDestroy, onMount} from "svelte";
 
@@ -65,11 +37,13 @@
     import {use_filepaste} from "../../client/filepaste";
 
     import {PASTE_PREFIX, UPLOAD_MAX_FILESIZE} from "../../shared/environment";
-    import {BlobTooLargeError} from "../../shared/errors";
+    import {BlobTooLargeError, PromptDismissedError} from "../../shared/errors";
     import {ICON_ALERT, ICON_COPY, ICON_NEGATIVE, ICON_UPLOAD} from "../../shared/icons";
     import {query_param, query_param_boolean} from "../../shared/location";
 
-    import {await_for, debounce} from "../../shared/util/functional";
+    import type {IResponseDirectory} from "../../shared/api/storage";
+    import {watch_directory} from "../../shared/api/storage";
+
     import {
         MIMETYPES_KNOWN,
         MIMETYPE_EXTENSIONS,
@@ -84,30 +58,19 @@
     import * as Popovers from "../../components/popovers";
     import * as Tables from "../../components/tables";
 
+    const auth = getContext("auth");
     const notifications = getContext("notifications");
     const preview = getContext("preview");
     const prompts = getContext("prompts");
-    const storage = getContext("storage");
-    const uploads = getContext("uploads");
+
+    if (!$auth) throw new Error("not authenticated");
+    const {storage, uploads} = $auth;
 
     const page = query_param("page", {default_value: "1"});
     const uploading = query_param_boolean("uploading", {default_value: false});
 
-    let initial = true;
-
-    export let directory_path: string = "";
-    export let directories: FileObject[] = [];
-    export let files: FileObject[] = [];
-    export let pages: number = 1;
-
-    const refresh_listing = debounce(
-        await_for(async (_page: string = $page) => {
-            try {
-                ({directories, files, pages} = await query_directory(fetch, directory_path, _page));
-            } catch (err) {}
-        }),
-        100
-    );
+    export let directory_path: string;
+    export let response: IResponseDirectory;
 
     function has_active_prompt() {
         // TODO: Probably a better way to so this yeah? This also misses the other non-prompt dialogs
@@ -165,6 +128,13 @@
                             title: "Clipboard Item Too Large for Editing",
                             description: "Skipping in-Browser Editor",
                         });
+                    } else if (err instanceof PromptDismissedError) {
+                        handle.update({
+                            icon: ICON_ALERT,
+                            title: "Dismissed, Skipping Clipboard Item",
+                        });
+
+                        return;
                     }
                 }
 
@@ -192,14 +162,13 @@
         if (handle_file_paste) handle_file_paste.destroy();
     });
 
-    $: _entries = [...directories, ...files];
+    $: _watch = watch_directory(storage, page, directory_path, response);
 
-    $: if (browser && !initial) refresh_listing($page);
-    $: if (!initial) initial = true;
+    let _directories: FileObject[], _files: FileObject[], _pages: number;
+    $: ({directories: _directories, files: _files, pages: _pages} = $_watch);
 
-    // TODO: Look into in-place updating
-    const watch = storage ? storage.watch_directory(directory_path) : null;
-    $: if (watch && $watch) refresh_listing();
+    $: _entries = [..._directories, ..._files];
+
 </script>
 
 <Stack alignment-x="between" alignment-y="center" orientation="horizontal">
@@ -219,7 +188,7 @@
         putting logic in CSS / HTML as much as possible. And premaking all the individual File modals
     -->
 
-    {#each files as file (file.name)}
+    {#each _files as file (file.name)}
         <Dialogs.StoragePreview {file} />
     {/each}
 
@@ -231,11 +200,11 @@
     <Spacer spacing="huge" stretch />
     <center>
         <Modifiers.Small>
-            {directories.length} directories, {files.length} files
+            {_directories.length} directories, {_files.length} files — {_entries.length} total
         </Modifiers.Small>
     </center>
 
-    {#if pages > 1}
+    {#if _pages > 1}
         <Spacer spacing="tiny" />
         <Paginations.Data
             href="/storage{directory_path}?page=%s"
@@ -243,7 +212,7 @@
             variation="clear"
             current={parseInt($page)}
             delta={2}
-            {pages}
+            pages={_pages}
         />
     {/if}
 {/if}
@@ -254,4 +223,5 @@
     center {
         opacity: var(--opacity-dull);
     }
+
 </style>

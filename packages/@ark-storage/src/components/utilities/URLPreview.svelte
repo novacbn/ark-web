@@ -16,6 +16,7 @@
     export let file_size: number;
     export let mime_type: string;
     export let src: string;
+
 </script>
 
 {#if MIMETYPES_PREVIEWABLE.includes(mime_type)}
@@ -69,4 +70,5 @@
     video {
         object-fit: contain !important;
     }
+
 </style>

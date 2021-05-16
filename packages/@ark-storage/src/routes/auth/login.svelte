@@ -7,6 +7,10 @@
         logout = "logout",
 
         sent = "sent",
+
+        timeout = "timeout",
+
+        unauthenticated = "unauthenticated",
     }
 
     export const load = reroute_auth(({page}) => {
@@ -19,6 +23,7 @@
             },
         };
     });
+
 </script>
 
 <script lang="ts">
@@ -26,6 +31,7 @@
 
     export let email: string = "";
     export let state: LoginStates = LoginStates.login;
+
 </script>
 
 <Heading>Log In</Heading>
@@ -34,6 +40,14 @@
     <Box palette="negative" variation="outline">Logged out of the Application</Box>
 {:else if state === LoginStates.sent}
     <Box palette="affirmative" variation="outline">E-Mail sent to your Inbox</Box>
+{:else if state === LoginStates.timeout}
+    <Box palette="negative" variation="outline">
+        Session timed out, logged out of the Application
+    </Box>
+{:else if state === LoginStates.unauthenticated}
+    <Box palette="negative" variation="outline">
+        Authentication required for access to the Application
+    </Box>
 {/if}
 
 <Box>

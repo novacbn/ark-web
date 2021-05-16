@@ -6,8 +6,9 @@ import type {IServerLogger} from "./_server/logger";
 import {make_logger} from "./_server/logger";
 import {create_refresh_client, create_request_client} from "./_server/supabase";
 
-import type {StorageClient} from "./shared/supabase/storage";
-import {create_storage_client} from "./shared/supabase/storage";
+import {STORAGE_PREFIX} from "./shared/environment";
+
+import {StorageClient} from "./shared/supabase/storage";
 
 export interface ILocals {
     logger: IServerLogger;
@@ -81,7 +82,11 @@ export const handle: Handle<ILocals> = async ({request, render}) => {
         }
     }
 
-    const storage = client ? create_storage_client(client) : null;
+    let storage: StorageClient | null = null;
+    if (client) {
+        const user = client.auth.user();
+        if (user) storage = new StorageClient(client, user.id, `${STORAGE_PREFIX}${user.id}`);
+    }
 
     request.locals = {
         logger,

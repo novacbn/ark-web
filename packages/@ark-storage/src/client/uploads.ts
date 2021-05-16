@@ -52,11 +52,9 @@ export interface IUploadsStore extends Readable<readonly Readonly<IFileUpload>[]
     rename_upload(file: File, name: string): void;
 }
 
-export function uploads(
-    client: SupabaseClient,
-    storage: StorageClient,
-    notifications: INotificationStore
-): IUploadsStore {
+export function uploads(storage: StorageClient, notifications: INotificationStore): IUploadsStore {
+    // TODO: Look into persistence on the client, assumedley via caching in IndexedDB?
+
     // @ts-ignore - HACK: Other code should be aware methods are not assigned and
     // the store is noop
     if (!browser) return readable<readonly Readonly<IFileUpload>[]>([]);

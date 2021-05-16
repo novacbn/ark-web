@@ -10,16 +10,12 @@ import type {Readable, Writable} from "svelte/store";
 import type {ISession} from "./hooks";
 
 import type {INotificationStore} from "./client/notifications";
+import type {IPromptsStore} from "./client/prompts";
 import type {IUploadsStore} from "./client/uploads";
 
-import type {StorageClient} from "./shared/supabase/storage";
-import type {IPromptsStore} from "./client/prompts";
+import type {IAuthStore} from "./shared/auth";
 
-declare global {
-    interface ImportMeta {
-        env: Record<string, string | undefined>;
-    }
-}
+import type {StorageClient} from "./shared/supabase/storage";
 
 declare module "$app/stores" {
     export function getStores(): {
@@ -63,17 +59,13 @@ declare module "@sveltejs/kit" {
 }
 
 declare module "svelte" {
+    export function getContext(key: "auth"): IAuthStore;
     export function getContext(key: "notifications"): INotificationStore;
     export function getContext(key: "preview"): Writable<string>;
     export function getContext(key: "prompts"): IPromptsStore;
-    export function getContext(key: "supabase"): SupabaseClient | null;
-    export function getContext(key: "storage"): StorageClient | null;
-    export function getContext(key: "uploads"): IUploadsStore | null;
 
+    export function setContext(key: "auth", context: IAuthStore);
     export function setContext(key: "notifications", context: INotificationStore);
     export function setContext(key: "preview", context: Writable<string>);
     export function setContext(key: "prompts", context: IPromptsStore);
-    export function setContext(key: "supabase", context: SupabaseClient | null);
-    export function setContext(key: "storage", context: StorageClient | null);
-    export function setContext(key: "uploads", context: IUploadsStore | null);
 }

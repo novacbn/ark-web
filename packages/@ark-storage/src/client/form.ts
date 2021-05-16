@@ -1,8 +1,10 @@
+import type {IActionHandle} from "./util/actions";
+
 const ENCODING_URL_DATA = "application/x-www-form-urlencoded";
 
 const MIMETYPE_JSON = "application/json";
 
-export interface IFormDetails {
+export interface IFormContext {
     body: BodyInit | null;
 
     encoding: string;
@@ -13,39 +15,42 @@ export interface IFormDetails {
 export interface IFormOptions {
     on_form_response?: (response: Response) => void;
 
-    on_form_submit?: (details: IFormDetails) => Partial<IFormDetails> | void;
+    on_form_submit?: (context: IFormContext) => Partial<IFormContext> | void;
 }
 
-export function use_form(element: HTMLFormElement, options: IFormOptions = {}) {
+export function use_form(
+    element: HTMLFormElement,
+    options: IFormOptions = {}
+): IActionHandle<IFormOptions> {
     let {on_form_response, on_form_submit} = options;
 
     async function on_submit(event: Event) {
         event.preventDefault();
 
         const method = (element.method || "GET").toLowerCase();
-        let details: IFormDetails = {
+        let context: IFormContext = {
             encoding: element.encoding,
             body: method === "post" || method === "put" ? new FormData(element) : null,
             method,
         };
 
         if (on_form_submit) {
-            details = {...details, ...(on_form_submit(details) || {})};
+            context = {...context, ...(on_form_submit(context) || {})};
         }
 
         const body =
-            details.encoding === ENCODING_URL_DATA && details.body instanceof FormData
+            context.encoding === ENCODING_URL_DATA && context.body instanceof FormData
                 ? // @ts-ignore - NOTE: This /is/ supported in modern Browser versions, however
                   // Typescript currently doesn't have it typed?
-                  new URLSearchParams(details.body)
-                : details.body;
+                  new URLSearchParams(context.body)
+                : context.body;
 
         const response = await fetch(element.action, {
-            method: details.method,
+            method: context.method,
             body,
             headers: {
                 accept: MIMETYPE_JSON,
-                "Content-Type": details.encoding,
+                "Content-Type": context.encoding,
             },
         });
 

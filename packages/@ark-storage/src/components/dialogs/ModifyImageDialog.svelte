@@ -4,6 +4,7 @@
 
         preview = "preview",
     }
+
 </script>
 
 <script lang="ts">
@@ -16,21 +17,21 @@
         Stack,
         // @ts-ignore
     } from "@kahi-ui/svelte";
+    import {CROP_STATE, ImageCrop} from "@novacbn/svelte-image-crop";
 
-    import {crop_image} from "../../client/image";
+    import {blob_src} from "../../client/blob";
     import type {IModifyImagePromptHandle} from "../../client/prompts";
 
     import {PromptDismissedError} from "../../shared/errors";
 
-    import EditorImageCrop from "../editor/EditorImageCrop.svelte";
-    import BlobImage from "../utilities/BlobImage.svelte";
+    let editor_crop: ImageCrop;
 
-    let editor_crop: EditorImageCrop;
-
-    let has_changed: boolean = false;
+    let is_dirty: boolean = false;
     let tab: MODIFY_IMAGE_TABS = MODIFY_IMAGE_TABS.preview;
 
     export let handle: IModifyImagePromptHandle;
+
+    const store = blob_src(handle.options.blob);
 
     function on_background_click(event: CustomEvent<MouseEvent>) {
         handle.reject(new PromptDismissedError("prompt dismissed"));
@@ -40,33 +41,47 @@
         handle.reject(new PromptDismissedError("prompt dismissed"));
     }
 
-    function on_crop_change() {
-        has_changed = !!editor_crop.get_relative_points();
-    }
-
     async function on_crop_clear_click(event: MouseEvent) {
         editor_crop.reset();
     }
 
     async function on_crop_commit_click(event: MouseEvent) {
-        const points = editor_crop.get_relative_points();
-        if (!points) return;
+        $store = await editor_crop.get_cropped_blob();
 
         editor_crop.reset();
-        handle.options.blob = await crop_image(handle.options.blob, points.start, points.end);
+    }
+
+    function on_crop_state(event: CustomEvent<{state: CROP_STATE}>) {
+        const {state} = event.detail;
+
+        is_dirty = state !== CROP_STATE.default;
     }
 
     async function on_submit_click(event: MouseEvent) {
         if (tab === MODIFY_IMAGE_TABS.crop) await on_crop_commit_click(event);
-        handle.resolve(handle.options.blob);
+
+        // NOTE: The store should never be `null` anyway
+        handle.resolve(store.get() as Blob);
+    }
+
+    $: {
+        // HACK: For whatever reason, the layout is not recomputing for the store reactivity. However,
+        // reactive blocks in the `<script>` tags do. So changing the tab to force a recompute
+
+        $store;
+
+        const old_tab = tab;
+        tab = MODIFY_IMAGE_TABS.preview;
+        tab = old_tab;
     }
 
     $: {
         // HACK: `tab` is marked to make this block reactive
         tab;
 
-        has_changed = false;
+        is_dirty = false;
     }
+
 </script>
 
 <Dialog.Container
@@ -104,14 +119,10 @@
 
             <Scrollable>
                 <Stack alignment="center">
-                    {#if tab === MODIFY_IMAGE_TABS.preview}
-                        <BlobImage blob={handle.options.blob} />
+                    {#if tab === MODIFY_IMAGE_TABS.crop}
+                        <ImageCrop bind:this={editor_crop} src={$store} on:state={on_crop_state} />
                     {:else}
-                        <EditorImageCrop
-                            bind:this={editor_crop}
-                            blob={handle.options.blob}
-                            on:change={on_crop_change}
-                        />
+                        <img src={$store} />
                     {/if}
                 </Stack>
             </Scrollable>
@@ -121,15 +132,11 @@
             <Dialog.Button variation="clear" on:click={on_dismiss_click}>Dismiss</Dialog.Button>
 
             {#if tab === MODIFY_IMAGE_TABS.crop}
-                <Button palette="negative" disabled={!has_changed} on:click={on_crop_clear_click}>
+                <Button palette="negative" disabled={!is_dirty} on:click={on_crop_clear_click}>
                     Clear
                 </Button>
 
-                <Button
-                    palette="affirmative"
-                    disabled={!has_changed}
-                    on:click={on_crop_commit_click}
-                >
+                <Button palette="affirmative" disabled={!is_dirty} on:click={on_crop_commit_click}>
                     Commit
                 </Button>
             {/if}
@@ -151,4 +158,5 @@
     :global(.dialog-modify-image.dialog-modify-image-preview .scrollable > .stack) {
         min-height: 64px;
     }
+
 </style>

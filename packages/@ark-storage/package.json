@@ -16,7 +16,7 @@
     "devDependencies": {
         "@supabase/supabase-js": "^1.11.9",
         "@sveltejs/adapter-node": "^1.0.0-next.20",
-        "@sveltejs/kit": "^1.0.0-next.104",
+        "@sveltejs/kit": "^1.0.0-next.107",
         "@types/cookie": "^0.4.0",
         "@types/ms": "^0.7.31",
         "@types/pino": "^6.3.7",
@@ -32,13 +32,14 @@
         "tslib": "^2.1.0",
         "typescript": "^4.2.3",
         "ulid": "^2.3.0",
-        "vite": "^2.1.5"
+        "vite": "^2.3.2"
     },
     "dependencies": {
-        "@kahi-ui/framework": "github:novacbn/kahi-ui",
-        "@kahi-ui/svelte": "github:novacbn/kahi-ui-svelte",
-        "svelte-codejar": "github:novacbn/svelte-codejar#0.0.2",
-        "svelte-feather": "github:novacbn/svelte-feather",
+        "@kahi-ui/framework": "file:../../../kahi-ui.nbn.dev/kahi-ui",
+        "@kahi-ui/svelte": "file:../../../kahi-ui.nbn.dev/kahi-ui-svelte",
+        "@novacbn/svelte-image-crop": "github:novacbn/svelte-image-crop#0.0.2",
+        "svelte-codejar": "github:novacbn/svelte-codejar#0.0.3",
+        "svelte-feather": "file:../../../kahi-ui.nbn.dev/svelte-feather/svelte-feather",
         "xbytes": "^1.7.0"
     }
 }

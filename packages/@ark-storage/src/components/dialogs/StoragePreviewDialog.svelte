@@ -35,10 +35,13 @@
 
     import URLPreview from "../utilities/URLPreview.svelte";
 
+    const auth = getContext("auth");
     const prompts = getContext("prompts");
-    const storage = getContext("storage");
     const notifications = getContext("notifications");
     const preview = getContext("preview");
+
+    if (!$auth) throw new Error("not authenticated");
+    const {storage} = $auth;
 
     export let file: FileObject;
     export let state: boolean = $preview === file.name;
@@ -116,9 +119,13 @@
     $: _download_url = `/api/v1/storage/files/download${_file_path}`;
     $: _file_path = normalize_pathname(file.name);
     $: _mime_type = get_mime_type(file.metadata.mimetype);
-    // TODO: This needs to be changed back to the preview URLs whenever
-    // SvelteKit is no longer bugged and server routes can serve file blobs again
-    $: _preview_url = state && !is_modifying ? `/api/v1/storage/files/preview${_file_path}` : "";
+    // HACK: Including the update timestamp allows simpler reactivity to updating the previews
+    // TODO: `file.updated_at` never actually updates, however `file.last_accessed_at` does and
+    // matches updates... sooooo ???
+    $: _preview_url =
+        state && !is_modifying
+            ? `/api/v1/storage/files/preview${_file_path}?updated=${file.last_accessed_at}`
+            : "";
     $: _share_url = file.metadata.share
         ? `${META_URL}/api/v1/storage/files/shared/${file.metadata.share}`
         : null;
@@ -131,6 +138,7 @@
             previous_state = state;
         }
     }
+
 </script>
 
 <Dialog.Container
@@ -169,7 +177,7 @@
                     <Formatting.Paragraph>
                         <Modifiers.Small>Modified</Modifiers.Small>
                         <br />
-                        {format_timestamp(file.updated_at)}
+                        {format_timestamp(file.last_accessed_at)}
                     </Formatting.Paragraph>
 
                     {#if file.metadata.share}
@@ -272,4 +280,5 @@
 
         height: 5ex;
     }
+
 </style>

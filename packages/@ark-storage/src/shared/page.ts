@@ -22,7 +22,7 @@ export function reroute_unauth(callback?: LoadAuth): LoadUnauth {
         if (!authentication) {
             return {
                 status: 307,
-                redirect: "/auth/login",
+                redirect: "/auth/login?state=unauthenticated",
             };
         }
 
